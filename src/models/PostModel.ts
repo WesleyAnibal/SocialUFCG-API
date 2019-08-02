@@ -3,7 +3,6 @@ import * as Sequelize from 'sequelize';
 import { BaseModelInterface } from '../interfaces/BaseModelInterface';
 import { ModelsInterface } from '../interfaces/ModelsInterface';
 import { UserAttributes } from './UserModel';
-import sequelize = require('sequelize');
 
 export interface PostAttributes {
     id?: number;
@@ -58,4 +57,4 @@ export default (sequelize: Sequelize.Sequelize, DataTypes: Sequelize.DataTypes):
         });
     };
     return Post;
-}
+};

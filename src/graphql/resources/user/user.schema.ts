@@ -8,7 +8,7 @@ const userTypes = `
         photo: String
         createdAt: String!
         updatedAt: String!
-        posts(first: Int, offset: Int): [ Post! ]!
+        posts(first: Int, offset: Int): [Post! ]!
     }
 
     input UserCreateInput {
@@ -20,7 +20,7 @@ const userTypes = `
     input UserUpdateInput {
         name: String!
         email: String!
-        photo: String!
+        photo: String
     }
 
     input UserUpdatePasswordInput {
@@ -32,14 +32,13 @@ const userTypes = `
 const userQueries = `
     users(first: Int, offset: Int): [ User! ]!
     user(id: ID!): User
-    currentUser: User
 `;
 
 const userMutations = `
     createUser(input: UserCreateInput!): User
-    updateUser(input: UserUpdateInput!): User
-    updateUserPassword(input: UserUpdatePasswordInput!): Boolean
-    deleteUser: Boolean
+    updateUser(id: ID!, input: UserUpdateInput!): User
+    updateUserPassword(id: ID!, input: UserUpdatePasswordInput!): Boolean
+    deleteUser(id: ID!): Boolean
 `;
 
 export {

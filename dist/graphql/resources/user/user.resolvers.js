@@ -1,89 +1,88 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const utils_1 = require("../../../utils/utils");
-const composable_resolver_1 = require("../../composable/composable.resolver");
-const auth_resolver_1 = require("../../composable/auth.resolver");
 exports.userResolvers = {
     User: {
-        posts: (user, { first = 10, offset = 0 }, { db, requestedFields }, info) => {
+        posts: (user, { first = 10, offset = 0 }, { db }, info) => {
             return db.Post
                 .findAll({
                 where: { author: user.get('id') },
                 limit: first,
-                offset: offset,
-                attributes: requestedFields.getFields(info, { keep: ['id'], exclude: ['comments'] })
-            }).catch(utils_1.handleError);
-        }
+                offset: offset
+            });
+        },
     },
     Query: {
-        users: (parent, { first = 10, offset = 0 }, context, info) => {
-            return context.db.User
+        users: (parent, { first = 10, offset = 0 }, { db }, info) => {
+            return db.User
                 .findAll({
                 limit: first,
-                offset: offset,
-                attributes: context.requestedFields.getFields(info, { keep: ['id'], exclude: ['posts'] })
-            }).catch(utils_1.handleError);
+                offset: offset
+            });
         },
-        user: (parent, { id }, context, info) => {
+        user: (parent, { id }, { db }, info) => {
             id = parseInt(id);
-            return context.db.User
-                .findById(id, {
-                attributes: context.requestedFields.getFields(info, { keep: ['id'], exclude: ['posts'] })
-            })
+            return db.User
+                .findById(id)
                 .then((user) => {
-                utils_1.throwError(!user, `User with id ${id} not found!`);
-                return user;
-            }).catch(utils_1.handleError);
+                if (!user) {
+                    throw new Error(`User with id ${id} not found!`);
+                }
+                else {
+                    return user;
+                }
+            });
         },
-        currentUser: composable_resolver_1.compose(...auth_resolver_1.authResolvers)((parent, args, context, info) => {
-            return context.db.User
-                .findById(context.authUser.id, {
-                attributes: context.requestedFields.getFields(info, { keep: ['id'], exclude: ['posts'] })
-            })
-                .then((user) => {
-                utils_1.throwError(!user, `User with id ${context.authUser.id} not found!`);
-                return user;
-            }).catch(utils_1.handleError);
-        })
     },
     Mutation: {
-        createUser: (parent, { input }, { db }, info) => {
+        createUser: (parent, args, { db }, info) => {
             return db.sequelize.transaction((t) => {
                 return db.User
-                    .create(input, { transaction: t });
-            }).catch(utils_1.handleError);
+                    .create(args.input, { transaction: t });
+            });
         },
-        updateUser: composable_resolver_1.compose(...auth_resolver_1.authResolvers)((parent, { input }, { db, authUser }, info) => {
+        updateUser: (parent, args, { db }, info) => {
+            const id = parseInt(args.id);
             return db.sequelize.transaction((t) => {
                 return db.User
-                    .findById(authUser.id)
+                    .findById(id)
                     .then((user) => {
-                    utils_1.throwError(!user, `User with id ${authUser.id} not found!`);
-                    return user.update(input, { transaction: t });
+                    if (!user)
+                        throw new Error(`User with id ${id} not found!`);
+                    else {
+                        return user.update(args.input, { transaction: t });
+                    }
                 });
-            }).catch(utils_1.handleError);
-        }),
-        updateUserPassword: composable_resolver_1.compose(...auth_resolver_1.authResolvers)((parent, { input }, { db, authUser }, info) => {
+            });
+        },
+        updateUserPassword: (parent, args, { db }, info) => {
+            const id = parseInt(args.id);
             return db.sequelize.transaction((t) => {
                 return db.User
-                    .findById(authUser.id)
+                    .findById(id)
                     .then((user) => {
-                    utils_1.throwError(!user, `User with id ${authUser.id} not found!`);
-                    return user.update(input, { transaction: t })
-                        .then((user) => !!user);
+                    if (!user)
+                        throw new Error(`User with id ${id} not found!`);
+                    else {
+                        return user.update(args.input, { transaction: t })
+                            .then((user) => !!user);
+                    }
                 });
-            }).catch(utils_1.handleError);
-        }),
-        deleteUser: composable_resolver_1.compose(...auth_resolver_1.authResolvers)((parent, args, { db, authUser }, info) => {
+            });
+        },
+        deleteUser: (parent, args, { db }, info) => {
+            const id = parseInt(args.id);
             return db.sequelize.transaction((t) => {
                 return db.User
-                    .findById(authUser.id)
+                    .findById(args.id)
                     .then((user) => {
-                    utils_1.throwError(!user, `User with id ${authUser.id} not found!`);
-                    return user.destroy({ transaction: t })
-                        .then(user => !!user);
+                    if (!user)
+                        throw new Error(`User with id ${id} not found!`);
+                    else {
+                        return user.destroy({ transaction: t })
+                            .then(user => !!user);
+                    }
                 });
-            }).catch(utils_1.handleError);
-        })
+            });
+        },
     }
 };

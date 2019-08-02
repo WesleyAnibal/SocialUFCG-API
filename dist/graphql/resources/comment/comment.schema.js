@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const commentTypes = `
-
+    
+    # Comment definition type
     type Comment {
         id: ID!
         comment: String!

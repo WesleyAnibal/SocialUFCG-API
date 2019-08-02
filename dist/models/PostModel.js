@@ -26,6 +26,7 @@ exports.default = (sequelize, DataTypes) => {
         tableName: 'posts'
     });
     Post.associate = (models) => {
+        //Aqui se faz a assosciação
         Post.belongsTo(models.User, {
             foreignKey: {
                 allowNull: false,

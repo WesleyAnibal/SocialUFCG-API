@@ -1,5 +1,6 @@
 const commentTypes = `
-
+    
+    # Comment definition type
     type Comment {
         id: ID!
         comment: String!
