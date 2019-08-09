@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const utils_1 = require("../../../utils/utils");
+const composable_resolver_1 = require("../../composable/composable.resolver");
+const auth_resolver_1 = require("../../composable/auth.resolver");
 exports.userResolvers = {
     User: {
         posts: (user, { first = 10, offset = 0 }, { db }, info) => {
@@ -8,7 +11,8 @@ exports.userResolvers = {
                 where: { author: user.get('id') },
                 limit: first,
                 offset: offset
-            });
+            })
+                .catch(utils_1.handleError);
         },
     },
     Query: {
@@ -17,72 +21,70 @@ exports.userResolvers = {
                 .findAll({
                 limit: first,
                 offset: offset
-            });
+            })
+                .catch(utils_1.handleError);
         },
         user: (parent, { id }, { db }, info) => {
             id = parseInt(id);
             return db.User
                 .findById(id)
                 .then((user) => {
-                if (!user) {
-                    throw new Error(`User with id ${id} not found!`);
-                }
-                else {
-                    return user;
-                }
-            });
+                utils_1.throwError(!user, `User with id ${id} not found!`);
+                return user;
+            })
+                .catch(utils_1.handleError);
         },
+        currentUser: composable_resolver_1.compose(...auth_resolver_1.authResolvers)((parent, args, { db, authUser }, info) => {
+            return db.User
+                .findById(authUser.id)
+                .then((user) => {
+                utils_1.throwError(!user, `User with id ${authUser.id} not found!`);
+                return user;
+            }).catch(utils_1.handleError);
+        })
     },
     Mutation: {
         createUser: (parent, args, { db }, info) => {
             return db.sequelize.transaction((t) => {
                 return db.User
                     .create(args.input, { transaction: t });
-            });
+            })
+                .catch(utils_1.handleError);
         },
-        updateUser: (parent, args, { db }, info) => {
-            const id = parseInt(args.id);
+        updateUser: composable_resolver_1.compose(...auth_resolver_1.authResolvers)((parent, args, { db, authUser }, info) => {
             return db.sequelize.transaction((t) => {
                 return db.User
-                    .findById(id)
+                    .findById(authUser.id)
                     .then((user) => {
-                    if (!user)
-                        throw new Error(`User with id ${id} not found!`);
-                    else {
-                        return user.update(args.input, { transaction: t });
-                    }
+                    utils_1.throwError(!user, `User with id ${authUser.id} not found!`);
+                    return user.update(args.input, { transaction: t });
                 });
-            });
-        },
-        updateUserPassword: (parent, args, { db }, info) => {
-            const id = parseInt(args.id);
+            })
+                .catch(utils_1.handleError);
+        }),
+        updateUserPassword: composable_resolver_1.compose(...auth_resolver_1.authResolvers)((parent, args, { db, authUser }, info) => {
             return db.sequelize.transaction((t) => {
                 return db.User
-                    .findById(id)
+                    .findById(authUser.id)
                     .then((user) => {
-                    if (!user)
-                        throw new Error(`User with id ${id} not found!`);
-                    else {
-                        return user.update(args.input, { transaction: t })
-                            .then((user) => !!user);
-                    }
+                    utils_1.throwError(!user, `User with id ${authUser.id} not found!`);
+                    return user.update(args.input, { transaction: t })
+                        .then((user) => !!user);
                 });
-            });
-        },
-        deleteUser: (parent, args, { db }, info) => {
-            const id = parseInt(args.id);
+            })
+                .catch(utils_1.handleError);
+        }),
+        deleteUser: composable_resolver_1.compose(...auth_resolver_1.authResolvers)((parent, args, { db, authUser }, info) => {
             return db.sequelize.transaction((t) => {
                 return db.User
-                    .findById(args.id)
+                    .findById(authUser.id)
                     .then((user) => {
-                    if (!user)
-                        throw new Error(`User with id ${id} not found!`);
-                    else {
-                        return user.destroy({ transaction: t })
-                            .then(user => !!user);
-                    }
+                    utils_1.throwError(!user, `User with id ${authUser.id} not found!`);
+                    return user.destroy({ transaction: t })
+                        .then(user => !!user);
                 });
-            });
-        },
+            })
+                .catch(utils_1.handleError);
+        }),
     }
 };
