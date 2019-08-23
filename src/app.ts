@@ -6,7 +6,6 @@ import schema from './graphql/schema';
 import { extractJwtMiddleware } from './middlewares/extract-jwt.middleware';
 
 
-
 class App {
 
     public express: express.Application;
@@ -24,7 +23,6 @@ class App {
             
             (req, res, next)=>{
                 req['context'].db = db;
-                console.log(db);
                 next();
             },
             graphqlHTTP((req) => ({

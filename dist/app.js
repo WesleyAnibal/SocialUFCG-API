@@ -13,7 +13,6 @@ class App {
     middleware() {
         this.express.use('/graphql', extract_jwt_middleware_1.extractJwtMiddleware(), (req, res, next) => {
             req['context'].db = models_1.default;
-            console.log(models_1.default);
             next();
         }, graphqlHTTP((req) => ({
             schema: schema_1.default,

@@ -7,13 +7,11 @@ import { JWT_SECRET } from '../utils/utils';
 
 export const extractJwtMiddleware = (): RequestHandler => {
     return (req: Request, res: Response, next: NextFunction): void => {
-        
         let authorization: string = req.get('authorization'); //authorization = Bearer token;
         let token: string =  authorization ? authorization.split(' ')[1] : undefined;
 
         req['context']  = {};
         req['context']['authorization'] = authorization;
-
         if(!token){
             return next();
         }
@@ -33,6 +31,7 @@ export const extractJwtMiddleware = (): RequestHandler => {
                             email: user.get('email')
                         };
                     }
+                    
                     return next();
                 });
         });
